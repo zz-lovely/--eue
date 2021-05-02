@@ -71,8 +71,11 @@ void findLeftPoint(void){
        
     }
     //丢边
-    if(!b1) leftLose=true;
-    
+    if(!b1){
+        leftLose=true;
+        
+        
+    }    
     //从中间往两头版
     for(i=row; i>0; i--){
     
@@ -208,20 +211,75 @@ void findRightPoint(void){
 
 
 void drawMidLine(void){
-    uint8 i,j;
-    if(!leftLose && !rightLose){
-    ips200_showstr(0, 9,"No Lose!   ");
-        for(i=0;i<MT9V03X_H; i++){
-            ips200_drawpoint((imageLeft[i]+imageRight[i])/2, i, RED);
-            ips200_drawpoint((imageLeft[i]+imageRight[i])/2+1, i, RED);
+    uint8 i,j, road_W_L,road_W_R;
+    uint8 mid = MT9V03X_W/2;
+    
+    //防误判丢边
+    uint8 cntBL=0,cntBR=0;//某列黑点个数
+    uint8 noBlackPoints=32;
+    for(i=0;i<MT9V03X_H; i++){
+        if(gray_img[i][1] == 0){
+            cntBL++;
+        }
+        if(gray_img[i][MT9V03X_W-2] == 0){
+            cntBR++;
         }
     }
-    else if (leftLose){
-        ips200_showstr(0, 9,"leftLost  ");
-        
+    if(cntBL>noBlackPoints){
+        leftLose=false;
     }
-    else if(rightLose){
-        ips200_showstr(0, 9,"rightLost");
+    if(cntBR>noBlackPoints){
+        rightLose=false;
+    }
+   
+            
+            
+//分情况画中线处理
+    //不丢边
+    if(!leftLose && !rightLose){
+        ips200_showstr(0, 9,"No Lose!   ");
+//        road_W_L=judgeTurn(imageLeft) ;
+//        road_W_R=judgeTurn(imageRight);
+        
+        for(i=0;i<MT9V03X_H; i++){
+            ips200_drawpoint((imageLeft[i]+imageRight[i])/2, i, RED);
+//            ips200_drawpoint((imageLeft[i]+imageRight[i])/2+1, i, RED);
+        }
+            
+//            赛道宽度好像没什么用了
+//        if(road_W_L == 256 && road_W_R == 256){            
+//             for(i=0;i<MT9V03X_H; i++){
+//                ips200_drawpoint((imageLeft[i]+imageRight[i])/2, i, RED);
+//                ips200_drawpoint((imageLeft[i]+imageRight[i])/2+1, i, RED);
+//            }
+//        }
+//        if( road_W_L !=256 ){
+//            for(i=0;i<MT9V03X_H; i++){
+//                
+//                ips200_drawpoint((imageLeft[i]+imageRight[i])/2, i, RED);
+//                ips200_drawpoint((imageLeft[i]+imageRight[i])/2+1, i, RED);
+//            }
+//        }
+
+    }
+    
+    //丢左边
+    else if (leftLose&&!rightLose){
+        ips200_showstr(0, 9,"leftLose  ");
+        for(i=0;i<MT9V03X_H; i++){
+                
+                ips200_drawpoint(imageRight[i]-mid, i, RED);
+  //              ips200_drawpoint(imageRight[i]-mid+1, i, RED);
+        }
+    }
+    
+    //丢右边
+    else if(rightLose && !leftLose){
+        ips200_showstr(0, 9,"rightLose");
+         for(i=0;i<MT9V03X_H; i++){
+                ips200_drawpoint(imageLeft[i]+mid, i, RED);
+  //              ips200_drawpoint(imageLeft[i]+mid+1, i, RED);
+        }
     }
     else{
          ips200_showstr(0, 9,"what Happen?");
@@ -234,8 +292,8 @@ uint16 judgeTurn(uint16 *arr){
     uint16 max=0,min=MT9V03X_W,i,j;
     uint16 countLeft=0,countRight=0;
     
-    //判断是否拐    
-    for(i=0;i<MT9V03X_H; i++){
+    //判断是否即将拐 还未丢边   
+    for(i=20;i<MT9V03X_H; i++){
         if(arr[i]>max){
             max=arr[i];
             countLeft = 0;//左转清零
@@ -253,13 +311,22 @@ uint16 judgeTurn(uint16 *arr){
         
         if(countLeft > 5){
             leftTurn = true;
+            ips200_showstr(0, 10,"leftTurn  ");
+            break;
         }
         else if(countRight > 5){
             rightTurn = true;
+            ips200_showstr(0, 10,"rightTurn  ");
+            break;
+        }
+        else{
+            ips200_showstr(0, 10,"No Turn  ");
         }
        
     }
-    
+    if(leftTurn)return imageRight[i-5] - 1 - max;
+    else if(rightTurn) return min - imageLeft[i];
+    else return 256;
 }
 
 

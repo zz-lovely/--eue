@@ -3,6 +3,8 @@
 /*======================================================*/
 #ifndef _CAM_H
 #define _CAM_H
+
+#include "common.h" ;
 /*------------------------------------------------------*/
 /*						 ∫Í∂®“Â							*/
 /*======================================================*/
@@ -14,4 +16,5 @@ void otsu(void);
 void findLeftPoint(void);
 void findRightPoint(void);
 void drawMidLine(void);
+uint16 judgeTurn(uint16 *arr);
 #endif

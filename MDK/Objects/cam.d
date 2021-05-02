@@ -1,11 +1,5 @@
 .\objects\cam.o: ..\CODE\CAM.c
 .\objects\cam.o: ..\CODE\CAM.h
-.\objects\cam.o: ..\CODE\pid.h
-.\objects\cam.o: ..\CODE\data.h
-.\objects\cam.o: ..\CODE\menu.h
-.\objects\cam.o: ..\CODE\menu_2.h
-.\objects\cam.o: ..\CODE\data.h
-.\objects\cam.o: ..\..\Libraries\seekfree_peripheral\SEEKFREE_MT9V03X.h
 .\objects\cam.o: ..\..\Libraries\seekfree_libraries\common\common.h
 .\objects\cam.o: ..\..\Libraries\Device\MM32F327x\Include\reg_common.h
 .\objects\cam.o: C:\1install\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
@@ -27,6 +21,12 @@
 .\objects\cam.o: ..\..\Libraries\Device\MM32F327x\Include\reg_fsmc.h
 .\objects\cam.o: C:\1install\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\objects\cam.o: C:\1install\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\cam.o: ..\CODE\pid.h
+.\objects\cam.o: ..\CODE\data.h
+.\objects\cam.o: ..\CODE\menu.h
+.\objects\cam.o: ..\CODE\menu_2.h
+.\objects\cam.o: ..\CODE\data.h
+.\objects\cam.o: ..\..\Libraries\seekfree_peripheral\SEEKFREE_MT9V03X.h
 .\objects\cam.o: ..\..\Libraries\seekfree_libraries\zf_uart.h
 .\objects\cam.o: C:\1install\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 .\objects\cam.o: ..\..\Libraries\Device\MM32F327x\HAL_Lib\Inc\hal_uart.h
