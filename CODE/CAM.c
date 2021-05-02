@@ -7,8 +7,10 @@
 #include "SEEKFREE_MT9V03X.h"
 #include "SEEKFREE_IPS200_PARALLEL8.h"
 
-int imageLeft[MT9V03X_H]={0};//存每行左基点坐标 初始化为0
-int imageRight[MT9V03X_H]={0};//存每行右基点坐标 数值：0-图像宽度MT9V03X_W
+uint16 imageLeft[MT9V03X_H]={0};//存每行左基点坐标 初始化为0
+uint16 imageRight[MT9V03X_H]={0};//存每行右基点坐标 数值：0-图像宽度MT9V03X_W
+bool leftLose,rightLose,leftTurn,rightTurn;
+
 /*--------------------------------------------------------------*/
 /* 							 变量定义 							*/
 /*==============================================================*/
@@ -49,6 +51,9 @@ void findLeftPoint(void){
     uint16 leftStart1_W = 0,leftStart2_W = 0, leftStart1_H = 0,leftStart2_H = 0,leftStart = 0;
    //找基点
     uint16 row = MT9V03X_H - 1;
+    
+    leftLose=false;
+    rightLose = false;
     //从两头往中间版
     for (i=row; i>0;i--){
         for( j= 1; j<mid + 20 && j< MT9V03X_W-1; j++){
@@ -62,9 +67,11 @@ void findLeftPoint(void){
         
         //找到基点 跳出循环
         if(b1) break;
-        //丢边
-        if(1 == i);
+        
+       
     }
+    //丢边
+    if(!b1) leftLose=true;
     
     //从中间往两头版
     for(i=row; i>0; i--){
@@ -79,6 +86,7 @@ void findLeftPoint(void){
         }
         //找到基点 跳出循环
         if(b2) break;
+       // if(1 == i) leftLose=true;
     }
     
     if(leftStart1_W == leftStart2_W){
@@ -103,8 +111,7 @@ void findLeftPoint(void){
        ips200_showuint16(0,6,leftStart1_W);
        ips200_showuint16(0,7,leftStart2_W);
        
-        ips200_showuint16(50,6,leftStart1_H);
-       ips200_showuint16(50,7,leftStart2_H);
+
        
         //找线
         for( i = MT9V03X_H-2; i > 0; i--){
@@ -112,15 +119,16 @@ void findLeftPoint(void){
                 if( 0 == gray_img[i][j] && 255 == gray_img[i][j+1]){ 
                     imageLeft[i] = j+1;
                     ips200_drawpoint( j+1 , i, RED);
+                    ips200_drawpoint( j+2 , i, RED);
                     break;
                 }
-            }
-            
+            }            
         }
         
         
     }
     findRightPoint();
+    drawMidLine();
 }
 
 void findRightPoint(void){
@@ -128,26 +136,28 @@ void findRightPoint(void){
     uint8 j, i;
     bool b1=false,b2=false;
     uint16 rightStart1_W = 0,rightStart2_W = 0,rightStart1_H = 0,rightStart2_H = 0, rightStart = 0;
-   //找基点
+
     uint8 row = MT9V03X_H - 1;
-    
+       //找右基点
     //从两头往中间版
     for(i=row; i>0; i--){
         for( j= MT9V03X_W-2; j>mid-20 && j>0; j--){
             if( 0 == gray_img[row][j] && 255 == gray_img[row][j-1]){    
-                rightStart1_W=j;
+                rightStart1_W=j-1;
                 rightStart1_H=i;
                 b1=true;
                 break;
             }
         }
         if(b1) break;
+
     }
-    
+     //丢边
+    if(!b1) rightLose=true;
     //从中间往两头版
     for(i=row; i>0; i--){
-        for(j= mid; j < MT9V03X_W; j++ ){
-            if( 255 == gray_img[row][j] && 0 == gray_img[row][j-1]){       
+        for(j= mid; j < MT9V03X_W-2; j++ ){
+            if( 255 == gray_img[row][j] && 0 == gray_img[row][j+1]){       
                 rightStart2_W=j;
                 rightStart2_H=i;
                 b2=true;
@@ -156,8 +166,9 @@ void findRightPoint(void){
             
         }
         if(b2) break;
+       // if(1 == i) leftLose=true;
     }
-
+    
     
     if(rightStart1_W == rightStart2_W){
         rightStart=rightStart1_W;
@@ -171,24 +182,87 @@ void findRightPoint(void){
     if( csimenu_flag[1]  ){
 
         for( i = 0; i<8;i++){
-           ips200_drawpoint(rightStart1_W+i, rightStart1_H, GREEN);
-        ips200_drawpoint(rightStart2_W+i, rightStart2_H, PURPLE);
+           ips200_drawpoint(rightStart1_W-i, rightStart1_H, GREEN);
+            ips200_drawpoint(rightStart2_W-i, rightStart2_H, PURPLE);
         }
         
-        ips200_showuint16(8,5,rightStart);
-       
+        ips200_showuint16(8,5, rightStart);
+        
+        ips200_showuint16(50,6, rightStart1_W);
+       ips200_showuint16(50,7, rightStart2_W);
         //找线
         for( i = MT9V03X_H-2; i > 0; i--){
-            for(j = MT9V03X_W-1; j > 0; j--){
+            for(j = MT9V03X_W-1; j > mid-20; j--){
                 if( 0 == gray_img[i][j] && 255 == gray_img[i][j-1]){ 
                     imageRight[i] = j-1;
                     ips200_drawpoint(j-1, i, RED);
+                    ips200_drawpoint(j-2, i, RED);
                     break;
                 }
             }
         }
     }
 }
+
+
+
+
+void drawMidLine(void){
+    uint8 i,j;
+    if(!leftLose && !rightLose){
+    ips200_showstr(0, 9,"No Lose!   ");
+        for(i=0;i<MT9V03X_H; i++){
+            ips200_drawpoint((imageLeft[i]+imageRight[i])/2, i, RED);
+            ips200_drawpoint((imageLeft[i]+imageRight[i])/2+1, i, RED);
+        }
+    }
+    else if (leftLose){
+        ips200_showstr(0, 9,"leftLost  ");
+        
+    }
+    else if(rightLose){
+        ips200_showstr(0, 9,"rightLost");
+    }
+    else{
+         ips200_showstr(0, 9,"what Happen?");
+    }
+}
+
+//判断是否出现左右拐 并返回模拟赛道宽度
+uint16 judgeTurn(uint16 *arr){
+    //声明变量
+    uint16 max=0,min=MT9V03X_W,i,j;
+    uint16 countLeft=0,countRight=0;
+    
+    //判断是否拐    
+    for(i=0;i<MT9V03X_H; i++){
+        if(arr[i]>max){
+            max=arr[i];
+            countLeft = 0;//左转清零
+        }
+        else if(arr[i]<min){
+            min=arr[i];
+            countRight=0;
+        }
+        else if(arr[i]<max){
+            countLeft++;
+        }
+        else if(arr[i]>min){
+            countRight++;
+        }
+        
+        if(countLeft > 5){
+            leftTurn = true;
+        }
+        else if(countRight > 5){
+            rightTurn = true;
+        }
+       
+    }
+    
+}
+
+
 
 
 /*------------------------------*/

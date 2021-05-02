@@ -13,4 +13,5 @@
 void otsu(void);
 void findLeftPoint(void);
 void findRightPoint(void);
+void drawMidLine(void);
 #endif
